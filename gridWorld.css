@@ -1,0 +1,154 @@
+.arrow {
+    position: absolute;
+    height: 60px;
+    width: 60px;
+    background-color: lightgrey;
+    -webkit-clip-path: polygon(40% 0%, 40% 20%, 100% 20%, 100% 80%, 40% 80%, 40% 100%, 0% 50%);
+    clip-path: polygon(40% 0%, 40% 20%, 100% 20%, 100% 80%, 40% 80%, 40% 100%, 0% 50%);
+    border: none;
+}
+
+.arrow:hover {
+    background-color: rgb(255, 168, 153);
+}
+
+#move {
+    position: relative;
+    height: 180px;
+    width: 180px;
+}
+
+#pin {
+    position: absolute;
+    height: 30px;
+    width: 30px;
+    background-color: rgb(255, 168, 153);
+    -webkit-clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    top: 65px;
+    left: 65px;
+}
+
+#grid {
+    height: 300px;
+    width: 300px;
+}
+
+#block {
+    position: relative;
+    height: 170px;
+    width: 170px;
+    margin-top: 10px;
+    margin-left: 10px;
+    }
+
+#leftText {
+    position: absolute; 
+    top: 10px;
+    left: 5px;
+    height: 140px;
+    width: 70px;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center
+    }
+
+#rightText {
+    position: absolute; 
+    top: 10px;
+    right: 5px;
+    height: 140px;
+    width: 70px;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center
+    }
+
+#topText {
+    position: absolute; 
+    top: 5px;
+    right: 10px;
+    height: 70px;
+    width: 140px;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    }
+
+#bottomText {
+    position: absolute; 
+    bottom: 5px;
+    right: 10px;
+    height: 70px;
+    width: 140px;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center
+    }
+
+
+#leftT {
+    position: absolute; 
+    top: 10px;
+    left: 5px;
+    background-color: rgb(211, 236, 252);
+    height: 140px;
+    width: 140px;
+    -webkit-clip-path: polygon(0 0, 0% 100%, 50% 50%);
+    clip-path: polygon(0 0, 0% 100%, 50% 50%);
+    }
+
+#topT {
+    top: 5px;
+    right: 10px;
+    position: absolute;
+    background-color: rgb(211, 236, 252);
+    height: 140px;
+    width: 140px;
+    -webkit-clip-path: polygon(0 0, 50% 50%, 100% 0);
+    clip-path: polygon(0 0, 50% 50%, 100% 0);
+    }
+
+#bottomT {
+    position: absolute; 
+    top: 15px;
+    left: 10px;
+    background-color: rgb(211, 236, 252);
+    height: 140px;
+    width: 140px;
+    -webkit-clip-path: polygon(0 100%, 50% 50%, 100% 100%);
+    clip-path: polygon(0 100%, 50% 50%, 100% 100%);
+    }
+
+#rightT {
+    top: 10px;
+    left: 15px;
+    position: absolute;
+    background-color: rgb(211, 236, 252);
+    height: 140px;
+    width: 140px;
+    -webkit-clip-path: polygon(100% 0, 50% 50%, 100% 100%);
+    clip-path: polygon(100% 0, 50% 50%, 100% 100%);
+    }
+
+input { 
+    width: 20px;
+    margin-right: 5px;
+}
+
+span {
+    font-family: Arial, Helvetica, sans-serif
+}
+
+.trials {
+    font-family: Arial, Helvetica, sans-serif;
+    position: absolute;
+    left: 230px;
+    top: 100px;
+    font-size: 30pt;
+    color: rgb(255, 168, 153);
+}

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="gridWorld.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+</head>
+
+<body>
+    <span id = "inputText" > Number of Rows: <input type = "text" id = "row" value = 3> 
+    <span id = "inputText" > Number of Cols: <input type = "text" id = "col" value = 4> 
+    <br><br>
+
+    <span> Start Position: <input type = "text" id = 'startRow' value = 2> <input type = "text" id = 'startCol' value = 1>
+    <span> Goal: <input type = "text" id = 'goalRow' value = 0> <input type = "text" id = 'goalCol' value = 3>
+    <span> Cliff: <input type = "text" id = 'cliffRow' value = 1> <input type = "text" id = 'cliffCol' value = 3>
+    <span> Empty: <input type = "text" id = 'emptyRow' value = 1> <input type = "text" id = 'emptyCol' value = 1>
+
+
+    <!-- <span id = "inputText" > Number of Rows: <input type = "text" id = "row" > 
+    <span id = "inputText" > Number of Cols: <input type = "text" id = "col" > <br><br>
+
+    <span> Start Position: <input type = "text" id = 'startRow'> <input type = "text" id = 'startCol'>
+    <span> Goal: <input type = "text" id = 'goalRow'> <input type = "text" id = 'goalCol'>
+    <span> Cliff: <input type = "text" id = 'cliffRow'> <input type = "text" id = 'cliffCol'>
+    <span> Empty: <input type = "text" id = 'emptyRow'> <input type = "text" id = 'emptyCol'> -->
+
+    <button onclick = 'setGame()' > Set Game! </button><br><br>
+
+    <div id = "move" >
+        <button id = "moveLeft" class = "arrow" style = "top: 60px" >  </button>
+        <button id = "moveRight" class = "arrow" style = "transform: rotate(180deg); top: 60px; left:120px" >  </button>
+        <button id = "moveUp" class = "arrow" style = "transform: rotate(90deg); left:60px" >  </button>
+        <button id = "moveDown" class = "arrow" style = "transform: rotate(270deg); left:60px; top: 120px" >  </button>
+    </div>
+    <div class = "trials" >TRIALS: <span id = "trials" > 1 </span></div>
+    <br><br>
+
+
+    <div id = "grid" >
+        <!-- <div id = "block">
+            <div id = "leftT"></div>
+            <div id = "topT"></div>
+            <div id = "bottomT"></div>
+            <div id = "rightT"></div>
+        </div> -->
+    </div>
+</body>
+
+<!-- game setup -->
+<script>
+
+    function inputValues(){
+
+        var row = Number(document.getElementById('row').value);
+        var col = Number(document.getElementById('col').value);
+
+        var inputs = {};
+        inputs.goal  = {row: Number($("#goalRow").val()),  col: Number($("#goalCol").val())};
+        inputs.goal.block = inputs.goal.row*col + inputs.goal.col;
+        
+        inputs.cliff = {row: Number($("#cliffRow").val()), col: Number($("#cliffCol").val())};
+        inputs.cliff.block = inputs.cliff.row*col + inputs.cliff.col;
+        
+        inputs.empty = {row: Number($("#emptyRow").val()), col: Number($("#emptyCol").val())};
+        inputs.empty.block = inputs.empty.row*col + inputs.empty.col;
+
+        inputs.start = {row: Number($("#startRow").val()), col: Number($("#startCol").val())};
+        inputs.start.block = inputs.start.row*col + inputs.start.col;
+
+        return inputs;
+    }
+
+    function makeGrid(){ 
+
+        $("#grid").empty();
+
+        var row = Number(document.getElementById('row').value);
+        var col = Number(document.getElementById('col').value);
+
+        for (var i = 0; i < row; i++){
+            for (var j = 0; j < col; j++){
+                var blockNumber = col*i + j;
+                var block   = "block" + blockNumber;
+                var blockid = "#" + block;
+
+                $("#grid").append( "<div id = " + block + "></div>" );
+                $(blockid).css({
+                    'position': 'relative',
+                    'height': '160px',
+                    'width': '160px',
+                    'margin-top': '10px',
+                    'margin-left': '10px',
+                    'background-color': 'white',
+                    'left': 170*(blockNumber-i*col),
+                    'top': -170*(blockNumber-i)
+                })
+                $(blockid).append('<div id = "leftT"></div>');
+                $(blockid).append('<div id = "leftText"> 0 </div>');
+                $(blockid).append('<div id = "topT"></div>');
+                $(blockid).append('<div id = "topText"> 0 </div>');
+                $(blockid).append('<div id = "rightT"></div>');
+                $(blockid).append('<div id = "rightText"> 0 </div>');
+                $(blockid).append('<div id = "bottomT"></div>');
+                $(blockid).append('<div id = "bottomText"> 0  </div>');
+            }
+        }
+    }
+
+    function findRelatives(type){
+
+        var row = Number(document.getElementById('row').value);
+        var col = Number(document.getElementById('col').value);  
+        // console.log( $("div#pin").parent().attr('id') )
+
+        var rc = inputValues();
+
+        // [row, col] of each block
+        var positions = {};
+        for(i = 0; i < row; i++){
+            for(j = 0; j < col; j++){
+                positions[i*col + j] =  [i,j];
+            };
+        };
+
+        // left top right bottom block number
+        var relatives = {};
+
+        if(type === 'numbers'){
+            for(var k = 0; k < row*col; k++){
+                // left
+                if(positions[k][1] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+1)){
+                    relatives['block' + k] = [k];
+                }else{
+                    relatives['block' + k] = [k - 1];
+                }
+                // top
+                if(positions[k][0] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block + col)){
+                    relatives['block' + k].push(k);
+                }else{
+                    relatives['block' + k].push(k - col);
+                }
+                // right
+                if(positions[k][1] == col-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-1)){
+                    relatives['block' + k].push(k);
+                }else{
+                    relatives['block' + k].push(k + 1);
+                }
+                // bottom
+                if(positions[k][0] == row-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block - col)){
+                    relatives['block' + k].push(k);
+                }else{
+                    relatives['block' + k].push(k + col);
+                }
+            }
+        }else if(type === 'names'){
+            for(var k = 0; k < row*col; k++){
+                // left
+                if(positions[k][1] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+1)){
+                    relatives['block' + k] = ['empty'];
+                }else if (positions[k][1] + positions[k][0]*col == rc.goal.block+1){
+                    relatives['block' + k] = ['goal'];
+                }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block+1){
+                    relatives['block' + k] = ['cliff'];
+                }else{
+                    relatives['block' + k] = [k - 1];
+                }
+                // top
+                if(positions[k][0] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+col)){
+                    relatives['block' + k].push('empty');
+                }else if(positions[k][1] + positions[k][0]*col == rc.goal.block+col){
+                    relatives['block' + k].push('goal');
+                }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block+col){
+                    relatives['block' + k].push('cliff');
+                }else{
+                    relatives['block' + k].push(k - col);
+                }
+                // right
+                if(positions[k][1] == col-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-1)){
+                    relatives['block' + k].push('empty');
+                }else if(positions[k][1] + positions[k][0]*col == rc.goal.block-1){
+                    relatives['block' + k].push('goal');
+                }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block-1){
+                    relatives['block' + k].push('cliff');
+                }else{
+                    relatives['block' + k].push(k + 1);
+                }
+                // bottom
+                if(positions[k][0] == row-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-col)){
+                    relatives['block' + k].push('empty');
+                }else if(positions[k][1] + positions[k][0]*col == rc.goal.block-col){
+                    relatives['block' + k].push('goal');
+                }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block-col){
+                    relatives['block' + k].push('cliff');
+                }else{
+                    relatives['block' + k].push(k + col);
+                }
+            }
+        }
+        return relatives;
+    }
+
+    function setGame(){
+
+        // console.clear();
+        makeGrid();
+        console.log(JSON.stringify(findRelatives('names'), null, 2))
+        var rc = inputValues();
+
+        var row = Number(document.getElementById('row').value);
+        var col = Number(document.getElementById('col').value);
+
+        var startNumber = col*rc.start.row + rc.start.col;
+        $("#block" + startNumber).css({'background-color': 'lightgrey'});
+        $("#block" + startNumber).append('<div id = "pin"></div> ');
+
+        var goalNumber = col*rc.goal.row + rc.goal.col;
+        $("#block" + goalNumber).empty();
+        $("#block" + goalNumber).append("<div style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px; background-color: rgb(131, 197, 70)'></div>")
+        // $("#block" + goalNumber).css({'background-color': 'rgb(131, 197, 70)'});
+
+        var cliffNumber = col*rc.cliff.row + rc.cliff.col;
+        $("#block" + cliffNumber).empty();
+        $("#block" + cliffNumber).append("<div style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px; background-color: rgb(225, 97, 68)'></div>")
+        // $("#block" + cliffNumber).css({'background-color': 'lightcoral'});
+
+        var emptyNumber = col*rc.empty.row + rc.empty.col;
+        $("#block" + emptyNumber).empty();
+    }
+    
+</script>
+
+<script>
+
+function qValue(curr, act, moveTo, next){
+
+        var alpha = 0.9;
+        var gamma = 0.9;
+
+        var maxQ = 0;
+        textIDs.forEach(function(id){
+            if(maxQ < $("#block" + moveTo).children(id).html()*1){
+                maxQ = $("#block" + moveTo).children(id).html()*1;
+            };
+        });
+
+        var R = 0;
+        if(next === 'goal'){
+            R = 0.96;
+        }else if (next === 'cliff'){
+            R = -1.04;
+        }else{
+            R = -0.04;
+        }
+
+        var Q = $("div#" + curr).children(act).html();
+        Q = (1-alpha)*Q + alpha*(R + gamma*maxQ);
+        Q = Q.toFixed(2)
+
+        $("div#" + curr).children(act).html(Q)  
+    }
+
+</script>
+
+<!-- arrow button -->
+<script>
+
+    var textIDs = ['#leftText', '#topText', '#rightText', '#bottomText'];
+
+    window.onload = function(){
+
+        var blockRelatives = findRelatives('numbers');
+        var blockRelativesNames = findRelatives('names');
+        
+        var previousBlock = [];
+        var lastMove = [];
+        var trials = 1;
+
+        $("button.arrow").click(function(){
+
+            var currBlock = $("div#pin").parent().attr('id');
+            // console.log($(this).attr('id'));
+
+            var moveTo = blockRelatives[currBlock];
+            var next   = blockRelativesNames[currBlock];
+            var inputs = inputValues();
+
+            $("#pin").remove();
+            if(lastMove === undefined){ 
+            }else{
+                $('#' + previousBlock).children(lastMove[0]).css({"background-color": "rgb(211, 236, 252)"});
+            }
+
+            if($(this).attr('id') === 'moveLeft'){
+
+                qValue(currBlock, '#leftText', moveTo[0], next[0]);
+                console.log(next)
+
+                if(moveTo[0] === inputs.goal.block || moveTo[0] === inputs.cliff.block){
+                    trials += 1;
+                    $("#trials").html(trials);
+                    $("#block" + inputs.start.block).append('<div id = "pin"></div>');
+                }else{
+                    $("#block" + moveTo[0]).append('<div id = "pin"></div>');
+                    $('#' + currBlock).children('#leftT').css({"background-color": "rgb(255, 168, 153)"});
+                    lastMove = ['#leftT'];
+                }
+            }else if($(this).attr('id') === 'moveUp'){
+
+                qValue(currBlock, '#topText', moveTo[1], next[1]);
+                console.log(next)
+
+                if(moveTo[1] === inputs.goal.block || moveTo[1] === inputs.cliff.block){
+                    trials += 1;
+                    $("#trials").html(trials);
+                    $("#block" + inputs.start.block).append('<div id = "pin"></div>');
+                }else{
+                    $("#block" + moveTo[1]).append('<div id = "pin"></div>');
+                    $('#' + currBlock).children('#topT').css({"background-color": "rgb(255, 168, 153)"});
+                    lastMove = ['#topT'];
+                }
+            }else if($(this).attr('id') === 'moveRight'){
+
+                qValue(currBlock, '#rightText', moveTo[2], next[2]);
+                console.log(next)
+
+                if(moveTo[2] === inputs.goal.block || moveTo[2] === inputs.cliff.block){
+                    trials += 1;
+                    $("#trials").html(trials);
+                    $("#block" + inputs.start.block).append('<div id = "pin"></div>');
+                }else{
+                    $("#block" + moveTo[2]).append('<div id = "pin"></div>');
+                    $('#' + currBlock).children('#rightT').css({"background-color": "rgb(255, 168, 153)"});
+                    lastMove = ['#rightT'];
+                }
+            }else{
+
+                qValue(currBlock, '#bottomText', moveTo[3], next[3]);
+                console.log(next)
+
+                if(moveTo[3] === inputs.goal.block || moveTo[3] === inputs.cliff.block){
+                    trials += 1;
+                    $("#trials").html(trials);
+                    $("#block" + inputs.start.block).append('<div id = "pin"></div>');
+                }else{
+                    $("#block" + moveTo[3]).append('<div id = "pin"></div>');
+                    $('#' + currBlock).children('#bottomT').css({"background-color": "rgb(255, 168, 153)"});
+                    lastMove = ['#bottomT'];
+                }
+            }
+            previousBlock = [currBlock];
+        })
+    }
+
+</script>
+
+
+</html>
