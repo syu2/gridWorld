@@ -40,6 +40,7 @@
     width: 170px;
     margin-top: 10px;
     margin-left: 10px;
+    background-color: rgb(222, 222, 222);
     }
 
 #leftText {
@@ -93,44 +94,45 @@
 
 #leftT {
     position: absolute; 
-    top: 10px;
-    left: 5px;
-    background-color: rgb(211, 236, 252);
-    height: 140px;
-    width: 140px;
+    top: 8px;
+    left: 4px;
+    background-color: white;
+    height: 145px;
+    width: 145px;
     -webkit-clip-path: polygon(0 0, 0% 100%, 50% 50%);
     clip-path: polygon(0 0, 0% 100%, 50% 50%);
     }
 
 #topT {
-    top: 5px;
-    right: 10px;
+    top: 4px;
+    right: 8px;
     position: absolute;
-    background-color: rgb(211, 236, 252);
-    height: 140px;
-    width: 140px;
+    background-color: white;
+    height: 145px;
+    width: 145px;
     -webkit-clip-path: polygon(0 0, 50% 50%, 100% 0);
     clip-path: polygon(0 0, 50% 50%, 100% 0);
     }
 
 #bottomT {
     position: absolute; 
-    top: 15px;
-    left: 10px;
-    background-color: rgb(211, 236, 252);
-    height: 140px;
-    width: 140px;
+    top: 11px;
+    left: 7px;
+    background-color: white;
+    height: 145px;
+    width: 145px;
     -webkit-clip-path: polygon(0 100%, 50% 50%, 100% 100%);
     clip-path: polygon(0 100%, 50% 50%, 100% 100%);
     }
 
 #rightT {
-    top: 10px;
-    left: 15px;
+    top: 8px;
+    left: 10px;
     position: absolute;
-    background-color: rgb(211, 236, 252);
-    height: 140px;
-    width: 140px;
+    /* background-color: rgb(211, 236, 252); */
+    background-color: white;
+    height: 145px;
+    width: 145px;
     -webkit-clip-path: polygon(100% 0, 50% 50%, 100% 100%);
     clip-path: polygon(100% 0, 50% 50%, 100% 100%);
     }

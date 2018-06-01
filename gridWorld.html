@@ -3,11 +3,14 @@
 <head>
     <link href="gridWorld.css" rel="stylesheet" type="text/css">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="gridWorld.js"></script>
 </head>
 
 <body>
     <span id = "inputText" > Number of Rows: <input type = "text" id = "row" value = 3> 
     <span id = "inputText" > Number of Cols: <input type = "text" id = "col" value = 4> 
+    <span id = "inputText" > Speed of autoPlay: <input type = "number" id = "speed" value = 100 style = "width: 50px" >
+    <span id = "inputText" > Exploitation Probability: <input type = "number" id = "probability" value = 0.7 style = "width: 50px" >
     <br><br>
 
     <span> Start Position: <input type = "text" id = 'startRow' value = 2> <input type = "text" id = 'startCol' value = 1>
@@ -33,6 +36,8 @@
         <button id = "moveDown" class = "arrow" style = "transform: rotate(270deg); left:60px; top: 120px" >  </button>
     </div>
     <div class = "trials" >TRIALS: <span id = "trials" > 1 </span></div>
+    <div> <button id = "auto" style = "position:absolute; left:230px; top: 200px" onclick = "auto.startPlay()" >Play For me!</button> </div>
+    <div> <button id = "auto" style = "position:absolute; left:230px; top: 240px" onclick = "auto.Pause()" >Pause</button> </div>
     <br><br>
 
 
@@ -90,7 +95,7 @@
                     'width': '160px',
                     'margin-top': '10px',
                     'margin-left': '10px',
-                    'background-color': 'white',
+                    'background-color': 'rgb(230, 230, 230)',
                     'left': 170*(blockNumber-i*col),
                     'top': -170*(blockNumber-i)
                 })
@@ -199,11 +204,22 @@
         return relatives;
     }
 
+var blockRelativesNames = undefined;
+var blockRelativesNumbs = undefined;
+var input = undefined;
+
     function setGame(){
 
         // console.clear();
+
+        blockRelativesNumbs = findRelatives('numbers');
+        blockRelativesNames = findRelatives('names');
+        input = inputValues();
+
+        clearTimeout(auto.play);
         makeGrid();
-        console.log(JSON.stringify(findRelatives('names'), null, 2))
+        $("#trials").html(1);
+        // console.log(JSON.stringify(findRelatives('names'), null, 2))
         var rc = inputValues();
 
         var row = Number(document.getElementById('row').value);
@@ -215,13 +231,17 @@
 
         var goalNumber = col*rc.goal.row + rc.goal.col;
         $("#block" + goalNumber).empty();
-        $("#block" + goalNumber).append("<div style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px; background-color: rgb(131, 197, 70)'></div>")
-        // $("#block" + goalNumber).css({'background-color': 'rgb(131, 197, 70)'});
+        $("#block" + goalNumber).append("<div style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px'> GOAL </div>")
+        // $("#block" + goalNumber).children("div").css({'background-color': 'rgb(131, 197, 70)'});
+        $("#block" + goalNumber).children("div").css({'background-color': 'white'});
+        $("#block" + goalNumber).children("div").css({'font-size': '30px', 'color': 'rgb(230, 230, 230)', 'position':'absolute', 'align-items': 'center', 'justify-content': 'center', 'display': 'flex'});
 
         var cliffNumber = col*rc.cliff.row + rc.cliff.col;
         $("#block" + cliffNumber).empty();
-        $("#block" + cliffNumber).append("<div style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px; background-color: rgb(225, 97, 68)'></div>")
+        $("#block" + cliffNumber).append("<div style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px'> CLIFF</div>")
         // $("#block" + cliffNumber).css({'background-color': 'lightcoral'});
+        $("#block" + cliffNumber).children("div").css({'background-color': 'white'});
+        $("#block" + cliffNumber).children("div").css({'font-size': '30px', 'color': 'rgb(230, 230, 230)', 'position':'absolute', 'align-items': 'center', 'justify-content': 'center', 'display': 'flex'});
 
         var emptyNumber = col*rc.empty.row + rc.empty.col;
         $("#block" + emptyNumber).empty();
@@ -229,24 +249,28 @@
     
 </script>
 
+<!-- learning -->
 <script>
 
-function qValue(curr, act, moveTo, next){
+function qValue(curr, act, nextNumb, nextName){
 
         var alpha = 0.9;
         var gamma = 0.9;
 
         var maxQ = 0;
+
+        var textIDs = ['#leftText', '#topText', '#rightText', '#bottomText'];
+
         textIDs.forEach(function(id){
-            if(maxQ < $("#block" + moveTo).children(id).html()*1){
-                maxQ = $("#block" + moveTo).children(id).html()*1;
+            if(maxQ < $("#block" + nextNumb).children(id).html()*1){
+                maxQ = $("#block" + nextNumb).children(id).html()*1;
             };
         });
 
         var R = 0;
-        if(next === 'goal'){
+        if(nextName === 'goal'){
             R = 0.96;
-        }else if (next === 'cliff'){
+        }else if (nextName === 'cliff'){
             R = -1.04;
         }else{
             R = -0.04;
@@ -257,19 +281,22 @@ function qValue(curr, act, moveTo, next){
         Q = Q.toFixed(2)
 
         $("div#" + curr).children(act).html(Q)  
-    }
+        return Q;
+}
 
 </script>
 
 <!-- arrow button -->
 <script>
 
-    var textIDs = ['#leftText', '#topText', '#rightText', '#bottomText'];
+    var reset = function(trials, numb){
+        console.log( 'numb: ' + numb);
+        $("#trials").html(trials);
+        $("#block" + input.start.block).append('<div id = "pin"></div>');
+        $('#block' + numb).children('div').css({"background-color": "white", "color": "rgb(230, 230, 230)"});
+    }
 
     window.onload = function(){
-
-        var blockRelatives = findRelatives('numbers');
-        var blockRelativesNames = findRelatives('names');
         
         var previousBlock = [];
         var lastMove = [];
@@ -277,78 +304,169 @@ function qValue(curr, act, moveTo, next){
 
         $("button.arrow").click(function(){
 
+            console.log(blockRelativesNames);
+            console.log(blockRelativesNumbs);
+            console.log(input)
+
             var currBlock = $("div#pin").parent().attr('id');
             // console.log($(this).attr('id'));
 
-            var moveTo = blockRelatives[currBlock];
-            var next   = blockRelativesNames[currBlock];
-            var inputs = inputValues();
+            var nextNumb = blockRelativesNumbs[currBlock];
+            var nextName = blockRelativesNames[currBlock];
 
             $("#pin").remove();
             if(lastMove === undefined){ 
             }else{
-                $('#' + previousBlock).children(lastMove[0]).css({"background-color": "rgb(211, 236, 252)"});
+                $('#' + previousBlock).children(lastMove[0]).css({"background-color": "white"});
             }
 
             if($(this).attr('id') === 'moveLeft'){
 
-                qValue(currBlock, '#leftText', moveTo[0], next[0]);
-                console.log(next)
+                qValue(currBlock, '#leftText', nextNumb[0], nextName[0]);
+                console.log([currBlock, '#leftText', nextNumb[0], nextName[0]])
 
-                if(moveTo[0] === inputs.goal.block || moveTo[0] === inputs.cliff.block){
+                if(nextNumb[0] === input.goal.block || nextNumb[0] === input.cliff.block){
                     trials += 1;
-                    $("#trials").html(trials);
-                    $("#block" + inputs.start.block).append('<div id = "pin"></div>');
+                    $('#block' + nextNumb[0]).children("div").css({"background-color": "lightgreen", "color": "white"});
+                    setTimeout('reset(' + trials + ',' + nextNumb[0] + ')', 100)
+                    console.log('=======new trial=======');
                 }else{
-                    $("#block" + moveTo[0]).append('<div id = "pin"></div>');
+                    $("#block" + nextNumb[0]).append('<div id = "pin"></div>');
                     $('#' + currBlock).children('#leftT').css({"background-color": "rgb(255, 168, 153)"});
                     lastMove = ['#leftT'];
                 }
             }else if($(this).attr('id') === 'moveUp'){
 
-                qValue(currBlock, '#topText', moveTo[1], next[1]);
-                console.log(next)
+                qValue(currBlock, '#topText', nextNumb[1], nextName[1]);
+                console.log([currBlock, '#topText', nextNumb[1], nextName[1]])
 
-                if(moveTo[1] === inputs.goal.block || moveTo[1] === inputs.cliff.block){
+                if(nextNumb[1] === input.goal.block || nextNumb[1] === input.cliff.block){
                     trials += 1;
-                    $("#trials").html(trials);
-                    $("#block" + inputs.start.block).append('<div id = "pin"></div>');
+                    $('#block' + nextNumb[1]).children("div").css({"background-color": "lightgreen", "color": "white"})
+                    setTimeout('reset(' + trials + ',' + nextNumb[1] + ')', 100)
+                    console.log('=======new trial=======');
                 }else{
-                    $("#block" + moveTo[1]).append('<div id = "pin"></div>');
+                    $("#block" + nextNumb[1]).append('<div id = "pin"></div>');
                     $('#' + currBlock).children('#topT').css({"background-color": "rgb(255, 168, 153)"});
                     lastMove = ['#topT'];
                 }
             }else if($(this).attr('id') === 'moveRight'){
 
-                qValue(currBlock, '#rightText', moveTo[2], next[2]);
-                console.log(next)
+                qValue(currBlock, '#rightText', nextNumb[2], nextName[2]);
+                console.log([currBlock, '#rightText', nextNumb[2], nextName[2]])
 
-                if(moveTo[2] === inputs.goal.block || moveTo[2] === inputs.cliff.block){
+                if(nextNumb[2] === input.goal.block || nextNumb[2] === input.cliff.block){
                     trials += 1;
-                    $("#trials").html(trials);
-                    $("#block" + inputs.start.block).append('<div id = "pin"></div>');
+                    $('#block' + nextNumb[2]).children("div").css({"background-color": "lightgreen", "color": "white"})
+                    setTimeout('reset(' + trials + ',' + nextNumb[2] + ')', 100)
+                    console.log('=======new trial=======');
                 }else{
-                    $("#block" + moveTo[2]).append('<div id = "pin"></div>');
+                    $("#block" + nextNumb[2]).append('<div id = "pin"></div>');
                     $('#' + currBlock).children('#rightT').css({"background-color": "rgb(255, 168, 153)"});
                     lastMove = ['#rightT'];
                 }
             }else{
 
-                qValue(currBlock, '#bottomText', moveTo[3], next[3]);
-                console.log(next)
+                qValue(currBlock, '#bottomText', nextNumb[3], nextName[3]);
+                console.log([currBlock, '#bottomText', nextNumb[3], nextName[3]])
 
-                if(moveTo[3] === inputs.goal.block || moveTo[3] === inputs.cliff.block){
+                if(nextNumb[3] === input.goal.block || nextNumb[3] === input.cliff.block){
                     trials += 1;
-                    $("#trials").html(trials);
-                    $("#block" + inputs.start.block).append('<div id = "pin"></div>');
+                    $('#block' + nextNumb[3]).children("div").css({"background-color": "lightgreen", "color": "white"})
+                    setTimeout('reset(' + trials + ',' + nextNumb[3] + ')', 100)
+                    console.log('=======new trial=======');
                 }else{
-                    $("#block" + moveTo[3]).append('<div id = "pin"></div>');
+                    $("#block" + nextNumb[3]).append('<div id = "pin"></div>');
                     $('#' + currBlock).children('#bottomT').css({"background-color": "rgb(255, 168, 153)"});
                     lastMove = ['#bottomT'];
                 }
             }
             previousBlock = [currBlock];
         })
+    }
+
+</script>
+
+<!-- automate -->
+<script>
+
+    var auto = {};
+
+    auto.trials  = 1;
+    auto.acts    = ['#left', '#top', '#right', '#bottom'];
+    auto.exploit = $("#probability").val();
+    
+    auto.lastMove       = [];
+    auto.previousBlock  = [];
+
+    auto.startPlay = function(){
+        var speed = $("#speed").val();
+        auto.play = setInterval(auto.playForMe, speed);
+    }
+
+    auto.Pause = function(){
+        clearTimeout(auto.play);
+    }
+
+    auto.playForMe = function(){
+
+        // find where pin is BEFORE moving
+        var currBlock = $("#pin").parent().attr("id");
+        var currBlockNumb = currBlock.slice(-1)*1;
+
+        var Qvalues = [];
+        auto.acts.forEach(function(a){
+            Qvalues.push($("#" + currBlock).children(a + "Text").html()*1);
+        });
+        var maxQvalue = Math.max(...Qvalues);
+
+        var maxQposition = [];
+        for(i=0;i<4;i++){
+            if(Qvalues[i] === maxQvalue){
+                maxQposition.push( i );
+            };
+        }
+    
+
+        // randomly choose the next act
+        var p = Math.random();
+        if(p >= auto.exploit){
+            var randMove = Math.floor(Math.random()*4);
+        }else{
+            var randSelect = Math.floor(Math.random()*maxQposition.length);
+            var randMove = maxQposition[randSelect];
+        }
+        
+        var act = auto.acts[randMove];
+
+        var nextBlockNumb = blockRelativesNumbs[currBlock][randMove];
+        var nextBlockName = blockRelativesNames[currBlock][randMove];
+        
+        $("#pin").remove();
+        if(auto.lastMove === undefined){ 
+        }else{
+            $('#' + auto.previousBlock).children(auto.lastMove[0]).css({"background-color": "white"});
+        }
+
+        if(nextBlockName=== 'goal' || nextBlockName === 'cliff'){
+            qValue(currBlock, act + "Text", nextBlockNumb, nextBlockName);
+            
+            // put the pin back to start
+            auto.trials += 1;
+            $('#trials').html(auto.trials);
+            $('#block' + nextBlockNumb).children("div").css({"background-color": "lightgreen", "color": "white"});
+            setTimeout('reset('+ auto.trials + ',' + nextBlockNumb + ')', 70)
+            console.log('======= trial ' + auto.trials + ' =======')
+            console.log('Total Q Score: ')
+        }else{
+            $("#block" + nextBlockNumb).append('<div id = "pin"></div>');
+            auto.lastMove = [act + 'T'];
+            $('#' + currBlock).children(auto.lastMove[0]).css({"background-color": "rgb(255, 168, 153)"});
+
+            qValue(currBlock, act + "Text", nextBlockNumb, nextBlockName);
+            }
+
+        auto.previousBlock = [currBlock];
     }
 
 </script>
