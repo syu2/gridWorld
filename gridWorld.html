@@ -54,265 +54,312 @@
 <!-- game setup -->
 <script>
 
-    function inputValues(){
+function inputValues(){
 
-        var row = Number(document.getElementById('row').value);
-        var col = Number(document.getElementById('col').value);
+    var row = Number(document.getElementById('row').value);
+    var col = Number(document.getElementById('col').value);
 
-        var inputs = {};
-        inputs.goal  = {row: Number($("#goalRow").val()),  col: Number($("#goalCol").val())};
-        inputs.goal.block = inputs.goal.row*col + inputs.goal.col;
-        
-        inputs.cliff = {row: Number($("#cliffRow").val()), col: Number($("#cliffCol").val())};
-        inputs.cliff.block = inputs.cliff.row*col + inputs.cliff.col;
-        
-        inputs.empty = {row: Number($("#emptyRow").val()), col: Number($("#emptyCol").val())};
-        inputs.empty.block = inputs.empty.row*col + inputs.empty.col;
+    var inputs = {};
+    inputs.goal  = {row: Number($("#goalRow").val()),  col: Number($("#goalCol").val())};
+    inputs.goal.block = inputs.goal.row*col + inputs.goal.col;
+    
+    inputs.cliff = {row: Number($("#cliffRow").val()), col: Number($("#cliffCol").val())};
+    inputs.cliff.block = inputs.cliff.row*col + inputs.cliff.col;
+    
+    inputs.empty = {row: Number($("#emptyRow").val()), col: Number($("#emptyCol").val())};
+    inputs.empty.block = inputs.empty.row*col + inputs.empty.col;
 
-        inputs.start = {row: Number($("#startRow").val()), col: Number($("#startCol").val())};
-        inputs.start.block = inputs.start.row*col + inputs.start.col;
+    inputs.start = {row: Number($("#startRow").val()), col: Number($("#startCol").val())};
+    inputs.start.block = inputs.start.row*col + inputs.start.col;
 
-        return inputs;
-    }
+    return inputs;
+}
 
-    function makeGrid(){ 
+function makeGrid(){ 
 
-        $("#grid").empty();
+    $("#grid").empty();
 
-        var row = Number(document.getElementById('row').value);
-        var col = Number(document.getElementById('col').value);
+    var row = Number(document.getElementById('row').value);
+    var col = Number(document.getElementById('col').value);
 
-        for (var i = 0; i < row; i++){
-            for (var j = 0; j < col; j++){
-                var blockNumber = col*i + j;
-                var block   = "block" + blockNumber;
-                var blockid = "#" + block;
+    for (var i = 0; i < row; i++){
+        for (var j = 0; j < col; j++){
+            var blockNumber = col*i + j;
+            var block   = "block" + blockNumber;
+            var blockid = "#" + block;
 
-                $("#grid").append( "<div id = " + block + "></div>" );
-                $(blockid).css({
-                    'position': 'relative',
-                    'height': '160px',
-                    'width': '160px',
-                    'margin-top': '10px',
-                    'margin-left': '10px',
-                    'background-color': 'rgb(230, 230, 230)',
-                    'left': 170*(blockNumber-i*col),
-                    'top': -170*(blockNumber-i)
-                })
-                $(blockid).append('<div id = "leftT"></div>');
-                $(blockid).append('<div id = "leftText"> 0 </div>');
-                $(blockid).append('<div id = "topT"></div>');
-                $(blockid).append('<div id = "topText"> 0 </div>');
-                $(blockid).append('<div id = "rightT"></div>');
-                $(blockid).append('<div id = "rightText"> 0 </div>');
-                $(blockid).append('<div id = "bottomT"></div>');
-                $(blockid).append('<div id = "bottomText"> 0  </div>');
-            }
+            $("#grid").append( "<div id = " + block + "></div>" );
+            $(blockid).css({
+                'position': 'relative',
+                'height': '160px',
+                'width': '160px',
+                'margin-top': '10px',
+                'margin-left': '10px',
+                'background-color': 'rgb(230, 230, 230)',
+                'left': 170*(blockNumber-i*col),
+                'top': -170*(blockNumber-i)
+            })
+            $(blockid).append('<div id = "LeftT"></div>');
+            $(blockid).append('<div id = "LeftText"> 0 </div>');
+            $(blockid).append('<div id = "UpT"></div>');
+            $(blockid).append('<div id = "UpText"> 0 </div>');
+            $(blockid).append('<div id = "RightT"></div>');
+            $(blockid).append('<div id = "RightText"> 0 </div>');
+            $(blockid).append('<div id = "DownT"></div>');
+            $(blockid).append('<div id = "DownText"> 0  </div>');
         }
     }
+}
 
-    function findRelatives(type){
+function findRelatives(type){
 
-        var row = Number(document.getElementById('row').value);
-        var col = Number(document.getElementById('col').value);  
-        // console.log( $("div#pin").parent().attr('id') )
+    var row = Number(document.getElementById('row').value);
+    var col = Number(document.getElementById('col').value);  
+    // console.log( $("div#pin").parent().attr('id') )
 
-        var rc = inputValues();
+    var rc = inputValues();
 
-        // [row, col] of each block
-        var positions = {};
-        for(i = 0; i < row; i++){
-            for(j = 0; j < col; j++){
-                positions[i*col + j] =  [i,j];
-            };
+    // [row, col] of each block
+    var positions = {};
+    for(i = 0; i < row; i++){
+        for(j = 0; j < col; j++){
+            positions[i*col + j] =  [i,j];
         };
+    };
 
-        // left top right bottom block number
-        var relatives = {};
+    // left top right bottom block number
+    var relatives = {};
 
-        if(type === 'numbers'){
-            for(var k = 0; k < row*col; k++){
-                // left
-                if(positions[k][1] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+1)){
-                    relatives['block' + k] = [k];
-                }else{
-                    relatives['block' + k] = [k - 1];
-                }
-                // top
-                if(positions[k][0] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block + col)){
-                    relatives['block' + k].push(k);
-                }else{
-                    relatives['block' + k].push(k - col);
-                }
-                // right
-                if(positions[k][1] == col-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-1)){
-                    relatives['block' + k].push(k);
-                }else{
-                    relatives['block' + k].push(k + 1);
-                }
-                // bottom
-                if(positions[k][0] == row-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block - col)){
-                    relatives['block' + k].push(k);
-                }else{
-                    relatives['block' + k].push(k + col);
-                }
+    if(type === 'numbers'){
+        for(var k = 0; k < row*col; k++){
+            // left
+            if(positions[k][1] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+1)){
+                relatives['block' + k] = [k];
+            }else{
+                relatives['block' + k] = [k - 1];
             }
-        }else if(type === 'names'){
-            for(var k = 0; k < row*col; k++){
-                // left
-                if(positions[k][1] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+1)){
-                    relatives['block' + k] = ['empty'];
-                }else if (positions[k][1] + positions[k][0]*col == rc.goal.block+1){
-                    relatives['block' + k] = ['goal'];
-                }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block+1){
-                    relatives['block' + k] = ['cliff'];
-                }else{
-                    relatives['block' + k] = [k - 1];
-                }
-                // top
-                if(positions[k][0] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+col)){
-                    relatives['block' + k].push('empty');
-                }else if(positions[k][1] + positions[k][0]*col == rc.goal.block+col){
-                    relatives['block' + k].push('goal');
-                }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block+col){
-                    relatives['block' + k].push('cliff');
-                }else{
-                    relatives['block' + k].push(k - col);
-                }
-                // right
-                if(positions[k][1] == col-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-1)){
-                    relatives['block' + k].push('empty');
-                }else if(positions[k][1] + positions[k][0]*col == rc.goal.block-1){
-                    relatives['block' + k].push('goal');
-                }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block-1){
-                    relatives['block' + k].push('cliff');
-                }else{
-                    relatives['block' + k].push(k + 1);
-                }
-                // bottom
-                if(positions[k][0] == row-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-col)){
-                    relatives['block' + k].push('empty');
-                }else if(positions[k][1] + positions[k][0]*col == rc.goal.block-col){
-                    relatives['block' + k].push('goal');
-                }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block-col){
-                    relatives['block' + k].push('cliff');
-                }else{
-                    relatives['block' + k].push(k + col);
-                }
+            // top
+            if(positions[k][0] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block + col)){
+                relatives['block' + k].push(k);
+            }else{
+                relatives['block' + k].push(k - col);
+            }
+            // right
+            if(positions[k][1] == col-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-1)){
+                relatives['block' + k].push(k);
+            }else{
+                relatives['block' + k].push(k + 1);
+            }
+            // bottom
+            if(positions[k][0] == row-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block - col)){
+                relatives['block' + k].push(k);
+            }else{
+                relatives['block' + k].push(k + col);
             }
         }
-        return relatives;
+    }else if(type === 'names'){
+        for(var k = 0; k < row*col; k++){
+            // left
+            if(positions[k][1] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+1)){
+                relatives['block' + k] = ['empty'];
+            }else if (positions[k][1] + positions[k][0]*col == rc.goal.block+1){
+                relatives['block' + k] = ['goal'];
+            }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block+1){
+                relatives['block' + k] = ['cliff'];
+            }else{
+                relatives['block' + k] = [k - 1];
+            }
+            // top
+            if(positions[k][0] == 0 || (positions[k][1] + positions[k][0]*col == rc.empty.block+col)){
+                relatives['block' + k].push('empty');
+            }else if(positions[k][1] + positions[k][0]*col == rc.goal.block+col){
+                relatives['block' + k].push('goal');
+            }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block+col){
+                relatives['block' + k].push('cliff');
+            }else{
+                relatives['block' + k].push(k - col);
+            }
+            // right
+            if(positions[k][1] == col-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-1)){
+                relatives['block' + k].push('empty');
+            }else if(positions[k][1] + positions[k][0]*col == rc.goal.block-1){
+                relatives['block' + k].push('goal');
+            }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block-1){
+                relatives['block' + k].push('cliff');
+            }else{
+                relatives['block' + k].push(k + 1);
+            }
+            // bottom
+            if(positions[k][0] == row-1 || (positions[k][1] + positions[k][0]*col == rc.empty.block-col)){
+                relatives['block' + k].push('empty');
+            }else if(positions[k][1] + positions[k][0]*col == rc.goal.block-col){
+                relatives['block' + k].push('goal');
+            }else if (positions[k][1] + positions[k][0]*col == rc.cliff.block-col){
+                relatives['block' + k].push('cliff');
+            }else{
+                relatives['block' + k].push(k + col);
+            }
+        }
     }
+    return relatives;
+}
 
 var blockRelativesNames = undefined;
 var blockRelativesNumbs = undefined;
 var input = undefined;
 
-    function setGame(){
+var previousBlock = [];
+var lastMove = [];
+var trials = 1;
+var acts = ['Left', 'Up', 'Right', 'Down'];
+var alpha = 0.5;
+var gamma = 1;
 
-        // console.clear();
+function setGame(){
+    lastMove = [];
 
-        blockRelativesNumbs = findRelatives('numbers');
-        blockRelativesNames = findRelatives('names');
-        input = inputValues();
+    // console.clear();
 
-        clearTimeout(auto.play);
-        makeGrid();
-        $("#trials").html(1);
-        // console.log(JSON.stringify(findRelatives('names'), null, 2))
-        var rc = inputValues();
+    blockRelativesNumbs = findRelatives('numbers');
+    blockRelativesNames = findRelatives('names');
+    input = inputValues();
 
-        var row = Number(document.getElementById('row').value);
-        var col = Number(document.getElementById('col').value);
+    console.log([blockRelativesNames, blockRelativesNumbs, input])
 
-        var startNumber = col*rc.start.row + rc.start.col;
-        $("#block" + startNumber).css({'background-color': 'lightgrey'});
-        $("#block" + startNumber).append('<div id = "pin"></div> ');
+    clearTimeout(auto.play);
+    makeGrid();
+    $("#trials").html(1);
+    // console.log(JSON.stringify(findRelatives('names'), null, 2))
+    var rc = inputValues();
 
-        var goalNumber = col*rc.goal.row + rc.goal.col;
-        $("#block" + goalNumber).empty();
-        $("#block" + goalNumber).append("<div style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px'> GOAL </div>")
-        // $("#block" + goalNumber).children("div").css({'background-color': 'rgb(131, 197, 70)'});
-        $("#block" + goalNumber).children("div").css({'background-color': 'white'});
-        $("#block" + goalNumber).children("div").css({'font-size': '30px', 'color': 'rgb(230, 230, 230)', 'position':'absolute', 'align-items': 'center', 'justify-content': 'center', 'display': 'flex'});
+    var row = Number(document.getElementById('row').value);
+    var col = Number(document.getElementById('col').value);
 
-        var cliffNumber = col*rc.cliff.row + rc.cliff.col;
-        $("#block" + cliffNumber).empty();
-        $("#block" + cliffNumber).append("<div style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px'> CLIFF</div>")
-        // $("#block" + cliffNumber).css({'background-color': 'lightcoral'});
-        $("#block" + cliffNumber).children("div").css({'background-color': 'white'});
-        $("#block" + cliffNumber).children("div").css({'font-size': '30px', 'color': 'rgb(230, 230, 230)', 'position':'absolute', 'align-items': 'center', 'justify-content': 'center', 'display': 'flex'});
+    var startNumber = col*rc.start.row + rc.start.col;
+    $("#block" + startNumber).css({'background-color': 'lightgrey'});
+    $("#block" + startNumber).append('<div id = "pin"></div> ');
 
-        var emptyNumber = col*rc.empty.row + rc.empty.col;
-        $("#block" + emptyNumber).empty();
-    }
-    
-</script>
+    var goalNumber = col*rc.goal.row + rc.goal.col;
+    $("#block" + goalNumber).empty();
+    $("#block" + goalNumber).css({'background-color': 'lightgreen'});
+    $("#block" + goalNumber).append("<div id = 'goal' style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px'> 0 </div>")
+    // $("#block" + goalNumber).children("div").css({'background-color': 'rgb(131, 197, 70)'});
+    $("#block" + goalNumber).children("div").css({'background-color': 'white'});
+    $("#block" + goalNumber).children("div").css({'font-size': '30px', 'color': 'rgb(230,230,230)', 'position':'absolute', 'align-items': 'center', 'justify-content': 'center', 'display': 'flex'});
 
-<!-- learning -->
-<script>
+    var cliffNumber = col*rc.cliff.row + rc.cliff.col;
+    $("#block" + cliffNumber).empty();
+    $("#block" + cliffNumber).css({'background-color': 'lightcoral'});
+    $("#block" + cliffNumber).append("<div id = 'cliff' style = 'position: absolute; height: 150px; width: 150px; top: 5px; left: 5px'> 0 </div>")
+    // $("#block" + cliffNumber).css({'background-color': 'lightcoral'});
+    $("#block" + cliffNumber).children("div").css({'background-color': 'white'});
+    $("#block" + cliffNumber).children("div").css({'font-size': '30px', 'color': 'rgb(230,230,230)', 'position':'absolute', 'align-items': 'center', 'justify-content': 'center', 'display': 'flex'});
 
-function qValue(curr, act, nextNumb, nextName){
-
-        var alpha = 0.9;
-        var gamma = 0.9;
-
-        var maxQ = 0;
-
-        var textIDs = ['#leftText', '#topText', '#rightText', '#bottomText'];
-
-        textIDs.forEach(function(id){
-            if(maxQ < $("#block" + nextNumb).children(id).html()*1){
-                maxQ = $("#block" + nextNumb).children(id).html()*1;
-            };
-        });
-
-        var R = 0;
-        if(nextName === 'goal'){
-            R = 0.96;
-        }else if (nextName === 'cliff'){
-            R = -1.04;
-        }else{
-            R = -0.04;
-        }
-
-        var Q = $("div#" + curr).children(act).html();
-        Q = (1-alpha)*Q + alpha*(R + gamma*maxQ);
-        Q = Q.toFixed(2)
-
-        $("div#" + curr).children(act).html(Q)  
-        return Q;
+    var emptyNumber = col*rc.empty.row + rc.empty.col;
+    $("#block" + emptyNumber).empty();
 }
-
+    
 </script>
 
 <!-- arrow button -->
 <script>
 
     var reset = function(trials, numb){
-        console.log( 'numb: ' + numb);
         $("#trials").html(trials);
         $("#block" + input.start.block).append('<div id = "pin"></div>');
         $('#block' + numb).children('div').css({"background-color": "white", "color": "rgb(230, 230, 230)"});
+    };
+    
+    function qValue(curr, act, nextNumb, nextName){
+
+        var Q = $("div#" + curr).children('#' + act + 'Text').html();
+        var R = -0.04;
+
+        if(nextName === 'goal'){
+            var goalQ = $('#goal').html();
+            Q = (1-alpha)*Q + alpha*(R + gamma*goalQ);
+            Q = Q.toFixed(3);
+            $('div#'+curr).children('#'+ act + 'Text').html(Q);
+
+            var maxFirstQ = 0;
+            acts.forEach(function(a){
+                if(maxFirstQ < $("#block" + input.start.block).children('#' + a + 'Text').html()*1){
+                    maxFirstQ = $("#block" + input.start.block).children('#' + a + 'Text').html()*1;
+                };
+            });
+
+            goalQ = (1-alpha)*goalQ + alpha*(1);
+            goalQ = goalQ.toFixed(3);
+            $('#goal').html(goalQ);
+
+        }else if (nextName === 'cliff'){
+            var cliffQ = $('#cliff').html();
+            Q = (1-alpha)*Q + alpha*(R + gamma*cliffQ);
+            Q = Q.toFixed(3);
+            $('div#'+curr).children('#' + act + 'Text').html(Q);
+
+            var maxFirstQ = 0;
+            acts.forEach(function(a){
+                if(maxFirstQ < $("#block" + input.start.block).children('#' + a + 'Text').html()*1){
+                    maxFirstQ = $("#block" + input.start.block).children('#' + a + 'Text').html()*1;
+                };
+            });
+
+            cliffQ = (1-alpha)*cliffQ + alpha*(-1);
+            cliffQ = cliffQ.toFixed(3);
+            $('#cliff').html(cliffQ);
+
+        }else{
+
+            var maxQ = 0;
+            acts.forEach(function(a){
+                if(maxQ < $("#block" + nextNumb).children('#' + a + 'Text').html()*1){
+                    maxQ = $("#block" + nextNumb).children('#' + a + 'Text').html()*1;
+                };
+            });
+
+            var Q = $("div#" + curr).children('#' + act + 'Text').html();
+            Q = (1-alpha)*Q + alpha*(R + gamma*maxQ);
+            Q = Q.toFixed(3)
+            
+            $("div#" + curr).children('#' + act + 'Text').html(Q)
+        }
+
+        // var maxQ = 0;
+
+        // var R = 0;
+        // if(nextName === 'goal'){
+        //     R = 1;
+        // }else if (nextName === 'cliff'){
+        //     R = -1;
+        // }else{
+        //     R = -0.04;
+        // }
+
+        // acts.forEach(function(a){
+        //     if(maxQ < $("#block" + nextNumb).children('#' + a + 'Text').html()*1){
+        //         maxQ = $("#block" + nextNumb).children('#' + a + 'Text').html()*1;
+        //     };
+        // });
+
+        // var Q = $("div#" + curr).children('#' + act + 'Text').html();
+        // Q = (1-alpha)*Q + alpha*(R + gamma*maxQ);
+        // Q = Q.toFixed(3)
+        
+        // $("div#" + curr).children('#' + act + 'Text').html(Q)
+        // console.log([curr, act, Q, maxQ])
     }
 
     window.onload = function(){
-        
-        var previousBlock = [];
-        var lastMove = [];
-        var trials = 1;
 
         $("button.arrow").click(function(){
 
-            console.log(blockRelativesNames);
-            console.log(blockRelativesNumbs);
-            console.log(input)
-
+            var act = $(this).attr('id').split('move').pop();
+            console.log(act)
             var currBlock = $("div#pin").parent().attr('id');
-            // console.log($(this).attr('id'));
 
-            var nextNumb = blockRelativesNumbs[currBlock];
-            var nextName = blockRelativesNames[currBlock];
+            var nextNumb = blockRelativesNumbs[currBlock][acts.indexOf(act)];
+            var nextName = blockRelativesNames[currBlock][acts.indexOf(act)];
 
             $("#pin").remove();
             if(lastMove === undefined){ 
@@ -320,67 +367,25 @@ function qValue(curr, act, nextNumb, nextName){
                 $('#' + previousBlock).children(lastMove[0]).css({"background-color": "white"});
             }
 
-            if($(this).attr('id') === 'moveLeft'){
+            qValue(currBlock, act, nextNumb, nextName);
+            console.log([currBlock, act, nextNumb, nextName]);
 
-                qValue(currBlock, '#leftText', nextNumb[0], nextName[0]);
-                console.log([currBlock, '#leftText', nextNumb[0], nextName[0]])
-
-                if(nextNumb[0] === input.goal.block || nextNumb[0] === input.cliff.block){
-                    trials += 1;
-                    $('#block' + nextNumb[0]).children("div").css({"background-color": "lightgreen", "color": "white"});
-                    setTimeout('reset(' + trials + ',' + nextNumb[0] + ')', 100)
-                    console.log('=======new trial=======');
-                }else{
-                    $("#block" + nextNumb[0]).append('<div id = "pin"></div>');
-                    $('#' + currBlock).children('#leftT').css({"background-color": "rgb(255, 168, 153)"});
-                    lastMove = ['#leftT'];
-                }
-            }else if($(this).attr('id') === 'moveUp'){
-
-                qValue(currBlock, '#topText', nextNumb[1], nextName[1]);
-                console.log([currBlock, '#topText', nextNumb[1], nextName[1]])
-
-                if(nextNumb[1] === input.goal.block || nextNumb[1] === input.cliff.block){
-                    trials += 1;
-                    $('#block' + nextNumb[1]).children("div").css({"background-color": "lightgreen", "color": "white"})
-                    setTimeout('reset(' + trials + ',' + nextNumb[1] + ')', 100)
-                    console.log('=======new trial=======');
-                }else{
-                    $("#block" + nextNumb[1]).append('<div id = "pin"></div>');
-                    $('#' + currBlock).children('#topT').css({"background-color": "rgb(255, 168, 153)"});
-                    lastMove = ['#topT'];
-                }
-            }else if($(this).attr('id') === 'moveRight'){
-
-                qValue(currBlock, '#rightText', nextNumb[2], nextName[2]);
-                console.log([currBlock, '#rightText', nextNumb[2], nextName[2]])
-
-                if(nextNumb[2] === input.goal.block || nextNumb[2] === input.cliff.block){
-                    trials += 1;
-                    $('#block' + nextNumb[2]).children("div").css({"background-color": "lightgreen", "color": "white"})
-                    setTimeout('reset(' + trials + ',' + nextNumb[2] + ')', 100)
-                    console.log('=======new trial=======');
-                }else{
-                    $("#block" + nextNumb[2]).append('<div id = "pin"></div>');
-                    $('#' + currBlock).children('#rightT').css({"background-color": "rgb(255, 168, 153)"});
-                    lastMove = ['#rightT'];
-                }
+            if(nextNumb === input.goal.block){
+                trials += 1;
+                $('#block' + nextNumb).children("div").css({"background-color": "lightgreen", "color": "white"});
+                setTimeout('reset(' + trials + ',' + nextNumb + ')', 100)
+                console.log('=======new trial=======');
+            }else if(nextNumb === input.cliff.block){
+                trials += 1;
+                $('#block' + nextNumb).children("div").css({"background-color": "lightcoral", "color": "white"});
+                setTimeout('reset(' + trials + ',' + nextNumb + ')', 100)
+                console.log('=======new trial=======');
             }else{
-
-                qValue(currBlock, '#bottomText', nextNumb[3], nextName[3]);
-                console.log([currBlock, '#bottomText', nextNumb[3], nextName[3]])
-
-                if(nextNumb[3] === input.goal.block || nextNumb[3] === input.cliff.block){
-                    trials += 1;
-                    $('#block' + nextNumb[3]).children("div").css({"background-color": "lightgreen", "color": "white"})
-                    setTimeout('reset(' + trials + ',' + nextNumb[3] + ')', 100)
-                    console.log('=======new trial=======');
-                }else{
-                    $("#block" + nextNumb[3]).append('<div id = "pin"></div>');
-                    $('#' + currBlock).children('#bottomT').css({"background-color": "rgb(255, 168, 153)"});
-                    lastMove = ['#bottomT'];
-                }
+                $("#block" + nextNumb).append('<div id = "pin"></div>');
+                $('#' + currBlock).children('#' + act + 'T').css({"background-color": "rgb(255, 168, 153)"});
+                lastMove = ['#' + act + 'T'];
             }
+
             previousBlock = [currBlock];
         })
     }
@@ -392,12 +397,7 @@ function qValue(curr, act, nextNumb, nextName){
 
     var auto = {};
 
-    auto.trials  = 1;
-    auto.acts    = ['#left', '#top', '#right', '#bottom'];
     auto.exploit = $("#probability").val();
-    
-    auto.lastMove       = [];
-    auto.previousBlock  = [];
 
     auto.startPlay = function(){
         var speed = $("#speed").val();
@@ -412,11 +412,13 @@ function qValue(curr, act, nextNumb, nextName){
 
         // find where pin is BEFORE moving
         var currBlock = $("#pin").parent().attr("id");
+        // block9
         var currBlockNumb = currBlock.slice(-1)*1;
+        // 9
 
         var Qvalues = [];
-        auto.acts.forEach(function(a){
-            Qvalues.push($("#" + currBlock).children(a + "Text").html()*1);
+        acts.forEach(function(a){
+            Qvalues.push($("#" + currBlock).children('#' + a + "Text").html()*1);
         });
         var maxQvalue = Math.max(...Qvalues);
 
@@ -426,47 +428,56 @@ function qValue(curr, act, nextNumb, nextName){
                 maxQposition.push( i );
             };
         }
-    
 
         // randomly choose the next act
-        var p = Math.random();
-        if(p >= auto.exploit){
+        
+        if(Math.random() >= auto.exploit){
             var randMove = Math.floor(Math.random()*4);
         }else{
             var randSelect = Math.floor(Math.random()*maxQposition.length);
             var randMove = maxQposition[randSelect];
         }
         
-        var act = auto.acts[randMove];
+        var act = acts[randMove];
 
-        var nextBlockNumb = blockRelativesNumbs[currBlock][randMove];
-        var nextBlockName = blockRelativesNames[currBlock][randMove];
+        var nextNumb = blockRelativesNumbs[currBlock][randMove];
+        var nextName = blockRelativesNames[currBlock][randMove];
         
         $("#pin").remove();
-        if(auto.lastMove === undefined){ 
+        if(lastMove === undefined){ 
         }else{
-            $('#' + auto.previousBlock).children(auto.lastMove[0]).css({"background-color": "white"});
+            $('#' + previousBlock).children('#' + lastMove + 'T').css({"background-color": "white"});
         }
 
-        if(nextBlockName=== 'goal' || nextBlockName === 'cliff'){
-            qValue(currBlock, act + "Text", nextBlockNumb, nextBlockName);
+        if(nextName === 'goal'){
+
+            qValue(currBlock, act, nextNumb, nextName);
             
             // put the pin back to start
-            auto.trials += 1;
-            $('#trials').html(auto.trials);
-            $('#block' + nextBlockNumb).children("div").css({"background-color": "lightgreen", "color": "white"});
-            setTimeout('reset('+ auto.trials + ',' + nextBlockNumb + ')', 70)
-            console.log('======= trial ' + auto.trials + ' =======')
-            console.log('Total Q Score: ')
-        }else{
-            $("#block" + nextBlockNumb).append('<div id = "pin"></div>');
-            auto.lastMove = [act + 'T'];
-            $('#' + currBlock).children(auto.lastMove[0]).css({"background-color": "rgb(255, 168, 153)"});
+            trials += 1;
+            $('#trials').html(trials);
+            $('#block' + nextNumb).children("div").css({"background-color": "lightgreen", "color": "white"});
+            setTimeout('reset('+ trials + ',' + nextNumb + ')', 70)
+            console.log('======= trial ' + trials + ' =======')
+        }else if(nextName === 'cliff'){
 
-            qValue(currBlock, act + "Text", nextBlockNumb, nextBlockName);
+            qValue(currBlock, act, nextNumb, nextName);
+            
+            // put the pin back to start
+            trials += 1;
+            $('#trials').html(trials);
+            $('#block' + nextNumb).children("div").css({"background-color": "lightcoral", "color": "white"});
+            setTimeout('reset('+ trials + ',' + nextNumb + ')', 70)
+            console.log('======= trial ' + trials + ' =======')
+        }else{
+            $("#block" + nextNumb).append('<div id = "pin"></div>');
+            lastMove = [act];
+            $('#' + currBlock).children('#' + lastMove + 'T').css({"background-color": "rgb(255, 168, 153)"});
+
+            qValue(currBlock, act, nextNumb, nextName);
             }
 
-        auto.previousBlock = [currBlock];
+        previousBlock = [currBlock];
     }
 
 </script>
